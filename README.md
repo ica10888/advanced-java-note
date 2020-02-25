@@ -68,7 +68,7 @@
 - [03-advanced java （三）线程](docs/03-advancedjava（三）线程.md)
 - [04-advanced java （四） 并发与共享变量](docs/04-advancedjava（四）并发与共享变量.md)
 - [05-advanced java （五） 协程](docs/05-advancedjava（五）协程.md)
-- [06-advanced java （六） lamdba表达式](docs/06-advancedjava（六）lamdba表达式.md)
+- [06-advanced java （六） lambda表达式](docs/06-advancedjava（六）lambda表达式.md)
 - [07-advanced java （七） Linux IO复用](docs/07-advancedjava（七）LinuxIO复用.md)
 - [08-advanced java （八） NIO](docs/08-advancedjava（八）NIO.md)
 - [09-advanced java （九） 异常](docs/09-advancedjava（九）异常.md)
