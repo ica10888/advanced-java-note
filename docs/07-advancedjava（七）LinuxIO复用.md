@@ -157,7 +157,7 @@ struct pollfd {
     int fd;
     short events;  //事件类型 读/写/读+写
     short revents;  //用这个参数来置位，替代 bitmap
-} 
+}
 
 for (i=0;i<5;i++) 
 {
