@@ -574,7 +574,7 @@ Quasar无法处理这种情况，使用Quasar库的时候要避免这种情况�
 
  Golang 语言最大的特色就是从语言层面使用协程支持并发（准确地说是并行执行） 。其中 goroutine 的实现是使用的PMG模型。大多数的协程都是相似的。
 
-![PMG模型]( https://pic3.zhimg.com/80/67f09d490f69eec14c1824d939938e14_hd.jpg )
+![](../img/chapter0501.jpg)
 
 - M：M是对内核级线程的封装，数量即 runtime.GOMAXPROCS， 数量对应真实的CPU数 。
 - G:  代表一个goroutine ,具有自己的栈。
