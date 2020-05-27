@@ -16,7 +16,7 @@ java有一个很出名的协程库 **quasar**  ，提供高并发平台轻量级
 
 ### Continuation
 
- 一般来讲，Continuation（延续） 表示的是「剩余的计算」的概念，换句话说就是「接下来要执行的代码」 。
+ 一般来讲，Continuation（延续） 表示的是 **剩余的计算** 的概念，换句话说就是 **接下来要执行的代码** 。
 
 举个例子来说
 
@@ -57,8 +57,7 @@ step1:
         "吃饱了")
             ((lambda(obj)
                 (display (string-append "做菜 ， 使用 " obj)) (newline)
-               "食物")
- x))) ;这里是一个callback，入参是"食材"，是上次计算完成的结果
+               "食物") x )))) ;这里是一个callback，入参是"食材"，是上次计算完成的结果
 ```
 
 接下来的计算就是 做菜，吃饭
@@ -78,16 +77,15 @@ step2：
 (lambda(x) (display
     ((lambda (obj)
       (display (string-append "吃饭 ， 使用 " obj)) (newline)
-       "吃饱了")
-x))) ;这里是一个callback，入参是"食物"，是上次计算完成的结果
+       "吃饱了") x ))) ;这里是一个callback，入参是"食物"，是上次计算完成的结果
 ```
 
-接下来的计算就是 吃饭
+接下来的计算就是 吃饭的延续
 
 step3：
 
 ``` scheme
-(display "吃饱了")
+(lambda (x)(display "吃饱了"))
 ```
 
 同理，使用java代码来理解一下
@@ -122,7 +120,7 @@ System.out.println(s);
 
  CPS是将控制流显式表示为continuation的一种编程风格， 简单来理解就是显式使用函数表示函数返回的后续操作。
 
-在这里，我们将 continuation 作为参数传递进来，即 `f` ，可以理解成 continuation 是一个只有一个入参，一个出参的函数。方法中调用自己的 continuation来完成计算。
+在这里，我们将 continuation 作为参数传递进来，即 `f` ，可以理解成 continuation 是一个函数，调用后会执行接下来的运算。方法中调用自己的 continuation 来完成计算。
 
 ``` java
 String s  = doEat(doCook(doBuy("菜篮子",buy),cook),eat);
@@ -149,7 +147,7 @@ public static String doEat (String o ,Function<String,String> f){
 
 ##### 回调地狱
 
-这种代码在流程多了之后，就很有可能形成 「回调地狱」或者「回调金字塔」，我们需要的是符合人类直觉的代码，这种风格的代码需要封装。 
+这种代码在流程多了之后，就很有可能形成  **回调地狱** 或者 **回调金字塔** ，我们需要的是符合人类直觉的代码，这种风格的代码需要封装。 
 
 实际上这种情况是不可避免的，因为上一次计算返回的结果要作为下次计算的参数，参数需要写在方法后面，这样就造成了一种结果，写在后面的代码会先执行。我们理解的顺序是  `doBuy -> doCook -> doEat ` ，事实上的代码是 `doEat(doCook(doBuy("菜篮子",buy),cook),eat)`
 
@@ -157,19 +155,19 @@ public static String doEat (String o ,Function<String,String> f){
 
 可以在执行完上一步后，将此步的 continuation 保存下来，假设我们有能力在此步中断，然后在上次中断处重新开始执行 ，就可以去做其他事情。
 
-如执行完 `doBuy("菜篮子",buy)` 之后，可以将状态保存下来，也就是 `食材` （保存上下文），下次执行 `doCook("食材",cook)`就可以了。
+如执行完 `doBuy("菜篮子",buy)` 之后，可以将状态保存下来，也就是 `食材`  和它的延续（保存上下文），下次执行 `doCook("食材",cook)`就可以了。
 
 比如买好菜后，可以先看一会电视，将衣服放入洗衣机等，然后再去做菜。这样就异步地执行了多个任务。
 
 **continuation 的代码是不是和callback很像呢？**
 
-因为 continuation 的特性很重要，有的语言（scheme/racket）将其作为一等公民（First-class）。
+因为 continuation 的特性很重要，有的语言（scheme/racket）将其作为一等公民（ first-class ）。
 
 ### call/cc
 
 使用call/cc，让我们的假设成为现实
 
- `call/cc` 的全名是 `call-with-current-continuation` ，它可以捕捉当前环境下的 current continuation 并利用它做各种各样的事情，如改变控制流等。
+ `call/cc` 的全名是  `call-with-current-continuation` ，它可以捕捉当前环境下的 current continuation 并利用它做各种各样的事情，如改变控制流等。
 
 假设这里有一个计算过程  
 
@@ -182,7 +180,7 @@ public static String doEat (String o ,Function<String,String> f){
   (current-continuation (+ 4 5)))
 
 (display (f (lambda (x) (* x 7)))) ; displays 63
-;;; (lambda (x) (* x 7)) 相当于传入一个 t -> t * 7 匿名函数 ,这个匿名函数相当于 continuation，也相当于 callback
+;;;  (lambda (x) (* x 7)) 相当于传入一个 t -> t * 7 匿名函数 ,这个匿名函数相当于 continuation，也相当于 callback
 ;;; 最后一步的返回值是 4 + 5 的计算结果 9 ，和接下来的计算 * 7  ，于是就直接打印 63
 
 
@@ -194,7 +192,7 @@ public static String doEat (String o ,Function<String,String> f){
 ;;; current-continuation 在scheme里不是关键字或者方法，这里只是传入参数的命名
 ```
 
-callcc 本质是改变控制流，除了可以实现协程(coroutine) ，还可以实现非本地退出(non-local exit)、多任务(multi-tasking)等。
+callcc 本质是改变控制流，除了可以实现协程( coroutine ) ，还可以实现非本地退出( non-local exit )、多任务( multi-tasking )等。
 
 我们用之前的例子来说明
 
@@ -204,8 +202,17 @@ callcc 本质是改变控制流，除了可以实现协程(coroutine) ，还可�
 (set! context "菜篮子")
 
 (set! context
-        ;这一行相当于简化的 continuation ，x -> "食物" -> "吃饱了" ，事实上并没有执行，这也是为什么说 callcc 本质是改变控制流，在 continuation 之前返回了
-       (call-with-current-continuation (lambda (  ((lambda(x) (display "吃饭")  "吃饱了")    ((lambda (x) (display "做菜")"食物"))  )) 
+       (call-with-current-continuation (lambda (
+                                                ;传入 continuation ，x -> "做菜,食材" -> "吃饭,食物" -> "吃饱了" 的一个callback，入参是 "菜篮子" 
+                                                ;事实上并没有执行，这也是为什么说 callcc 本质是改变控制流，在 continuation 之前返回了
+                                                (lambda(x) (display
+                                                    ((lambda (obj)
+                                                        (display (string-append "吃饭 ， 使用 " obj)) (newline)
+                                                        "吃饱了")
+                                                            ((lambda(obj)
+                                                                (display (string-append "做菜 ， 使用 " obj)) (newline)
+                                                               "食物") x ))))
+                                                 ) 
         ((lambda (obj)
             (display (string-append "买菜 ， 使用 " obj)) (newline)
              "食材")  context ))))
@@ -213,12 +220,20 @@ callcc 本质是改变控制流，除了可以实现协程(coroutine) ，还可�
 (display "看一会电视，将衣服放入洗衣机") (newline)    
          
 (set! context
-       (call-with-current-continuation (lambda ((lambda (x) (display "做菜")"食物"  ))
+       (call-with-current-continuation (lambda (
+                                                ;传入 continuation ，x -> "吃饭,食物" -> "吃饱了" 的一个callback，入参是 "食材"
+                                                ;也就是将上一次的 continuation 保存状态，然后接下来执行，直到遇到下一个 continuation
+                                                (lambda(x) (display
+                                                    ((lambda (obj)
+                                                      (display (string-append "吃饭 ， 使用 " obj)) (newline)
+                                                       "吃饱了") x )))   
+                                                )
         ((lambda (obj)
             (display (string-append "做菜 ， 使用 " obj)) (newline)
              "食物")  context ))))
 (set! context
-      ; 这里只需要是个回调函数就可以了，因为callcc 在接下来的延续（current-continuation）之前返回
+                                                ;这里是 (lambda (x)(display "吃饱了")) ，也就是最后一个 continuation
+                                                ;事实上，这里只需要是个回调函数就可以了，因为callcc 在接下来的延续（current-continuation）之前返回
        (call-with-current-continuation (lambda (whatever-current-continuation) 
         ((lambda (obj)
             (display (string-append "吃饭 ， 使用 " obj)) (newline)
@@ -228,7 +243,6 @@ callcc 本质是改变控制流，除了可以实现协程(coroutine) ，还可�
 
 (display context)
 )
-
 
 ;;; 买菜 ， 使用 菜篮子
 ;;; 看一会电视，将衣服放入洗衣机
@@ -255,7 +269,7 @@ callcc 本质是改变控制流，除了可以实现协程(coroutine) ，还可�
 执行结果是
 
 ``` scheme
-@*@**@***@****@*****@******@*******@  ;;; infinite
+@*@**@***@****@*****@******@*******@********  ;;; infinite
 ```
 
 这里 yin 和 yang 交替进行，而 yang 由于 `上下文环境`不同，yang 每次会较上一次多一层嵌套，打印 `*` 依次增加
@@ -299,9 +313,9 @@ public static Integer say(Integer num, Function<Integer,Integer> func) {
 }
 ```
 
-上面这段代码会抛出StackOverflowError错误。
+上面这段代码会抛出 StackOverflowError 错误。
 
-这是因为在 jvm 运行时的数据区域中有一个java虚拟机栈，当执行java方法时会进行压栈弹栈的操作。jvm规定了栈的最大深度，当执行时栈的深度大于了规定的深度，就会抛出上面的错误。
+这是因为在 jvm 运行时的数据区域中有一个 java 虚拟机栈，当执行java方法时会进行压栈弹栈的操作。jvm 规定了栈的最大深度，当执行时栈的深度大于了规定的深度，就会抛出上面的错误。
 
 如果使用了具有 **尾递归优化** 的语言，就不会存在上面的问题了。
 
@@ -560,7 +574,7 @@ Quasar无法处理这种情况，使用Quasar库的时候要避免这种情况�
 
  Golang 语言最大的特色就是从语言层面使用协程支持并发（准确地说是并行执行） 。其中 goroutine 的实现是使用的PMG模型。大多数的协程都是相似的。
 
-![](../img/chapter0501.jpg)
+![PMG模型]( https://pic3.zhimg.com/80/67f09d490f69eec14c1824d939938e14_hd.jpg )
 
 - M：M是对内核级线程的封装，数量即 runtime.GOMAXPROCS， 数量对应真实的CPU数 。
 - G:  代表一个goroutine ,具有自己的栈。
