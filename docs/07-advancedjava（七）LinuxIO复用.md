@@ -93,7 +93,7 @@ Reactor用于同步IO，而Proactor用于异步IO。
 
 伪代码
 
-``` c++
+``` cpp
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
   memset(&addr, 0, sizeof (addr));
   addr.sin_family = AF_INET;
@@ -149,7 +149,7 @@ Reactor用于同步IO，而Proactor用于异步IO。
 
 伪代码
 
-``` c++
+``` cpp
 int poll (struct pollfd *fds, unsigned int nfds, int timeout);
 
 //这里放弃使用 bitmap ，而是传入一个结构体
@@ -196,7 +196,7 @@ while(1){
 
 伪代码
 
-``` c++
+``` cpp
   struct epoll_event events[5];
   int epfd = epoll_create(10); //这里的10其实没多大意义，只要大于0就行
   ...
